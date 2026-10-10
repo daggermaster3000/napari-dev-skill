@@ -50,6 +50,13 @@ shape.
   sizing one dock lets Qt steal from whichever neighbour it likes.
 - A dock whose widget you swap keeps the old minimum pinned: reset
   `dock.setMinimumSize(50, 50)` and `dock.layout().invalidate()`.
+- Many panels: start them hidden and open them from your **own** menu-bar menu
+  of `dock.toggleViewAction()`s (napari rebuilds its own menus and drops added
+  actions). napari's dock close button *destroys* the dock — set
+  `dock.destroyOnClose = dock.hide`.
+- Remember the session (open panels, settings, files, view) by saving on the
+  window's `QEvent.Close` — at `aboutToQuit` the viewer is already empty — and
+  restore in order: panels, files, settings, view.
 - napari's stylesheet overrides `setFont`; style emphasised labels with
   `setStyleSheet("font-size: 22px; font-weight: bold;")`.
 

@@ -6,7 +6,9 @@
 3. Fitting to the screen (restore, fullscreen, monitor changes)
 4. Sharing space between docks
 5. Registering panels
-6. Small things: fonts, tables, busy overlay, splash
+6. A panels menu instead of a wall of tabs
+7. Remembering the session between launches
+8. Small things: fonts, tables, busy overlay, splash
 
 ## 1. Diagnose with numbers
 
@@ -112,7 +114,76 @@ panel, factories import their widget inside the function (heavy deps stay off
 the startup path), a failing panel is logged and skipped. Tabify with
 `window.tabifyDockWidget(target, dock)` then `target.raise_()`.
 
-## 6. Small things
+## 6. A panels menu instead of a wall of tabs
+
+A dozen tabified docks is clutter. Start every panel hidden except the one a
+session begins with, and open the rest from a menu:
+
+```python
+menu = QMenu("&Panels", window.main_menu)
+window.main_menu.insertMenu(window.window_menu.menuAction(), menu)   # after Plugins
+action = dock.toggleViewAction()          # the tick follows the dock, whoever hides it
+action.setText(spec.title)
+action.triggered.connect(lambda checked, d=dock: d.raise_() if checked else None)
+menu.addAction(action)
+```
+
+- **Own menu, not inside napari's.** `plugins_menu`, `window_menu` and the rest
+  are app-model `QModelMenu`s rebuilt from the command registry; actions added by
+  hand disappear on the next rebuild.
+- Keep the `tabifyDockWidget` calls: a hidden dock shows no tab, so tabs appear
+  only for what is open, and a second open panel does not split the column.
+- **napari's dock close button destroys the dock** (`destroyOnClose` →
+  `remove_dock_widget`), leaving the menu action pointing at a dead widget. Make
+  it hide: `dock.destroyOnClose = dock.hide`. Set it on the dock, not on the
+  title bar's button — the title bar is rebuilt when the dock is moved or floated.
+- `raise_()` on showing, or a panel opens *behind* its tab-mates and looks like
+  nothing happened.
+- Code that sizes or reads "the dock in that column" must look for whichever one
+  is visible now, not a fixed identifier.
+- Buttons and shortcuts that act through a panel (play, export) must keep working
+  while its dock is hidden — hidden is not unbuilt.
+
+## 7. Remembering the session between launches
+
+One JSON file in the per-user data dir, behind a `session_file()` tests can
+redirect: open panels, front tab, panel settings, last directory, folder and
+selection, open files, camera and sliders.
+
+- **Save on the main window's `QEvent.Close`** (an event filter on
+  `window._qt_window`), not `aboutToQuit`: by then napari has emptied the viewer
+  and hidden the docks.
+- Read open docks with `not dock.isHidden()` (`isVisible()` is false for every
+  child of an unshown window); the front tab of a stack is the one whose
+  `visibleRegion()` is not empty.
+- **Panel settings without per-panel code:** walk `panel.findChildren(...)` for
+  spin boxes, check boxes, combos, line edits, sliders, checkable group boxes and
+  tab widgets; key each by kind + position. Skip controls inside an item view
+  (table rows belong to the data), the inner line edit of a spin box or combo,
+  and read-only edits. Store a fingerprint (count per kind) and restore only when
+  it matches, so values never land on a different control after the form changes.
+- Restore *as the user would*: set values with signals on so dependent UI
+  follows; emit `editingFinished` after `setText`; drop a spin value outside the
+  current range instead of clamping; set a combo only if the text is among its
+  items.
+- **Order:** panels → files → settings → view → folder scan. Settings come after
+  the files because layer combos are empty until layers exist; the camera after
+  `open_paths`, which resets the view.
+- **Crash-loop guard:** write a `reopening` flag before reopening last time's
+  files and clear it after; a launch that finds the flag skips the files.
+  Skip missing paths silently (a share not mounted today).
+- Files asked for explicitly (argv, macOS `FileOpen` events already pending) win
+  over last time's files; panels and settings still restore. Give a `--fresh`
+  flag.
+- A restored async folder scan must not replay its side effects (pop-up windows,
+  dialogs); carry a "restoring" marker through the worker and clear it on
+  `finished` so a failed scan does not leak it into the next one.
+- Wire save/restore in `launch()`, not the viewer constructor, so tests that
+  build the viewer directly never touch a real session.
+- Write atomically (`.part` then `os.replace`); version the file and ignore
+  other versions.
+
+## 8. Small things
 
 - napari's stylesheet overrides `QLabel.setFont`. Use a per-widget
   `setStyleSheet`.

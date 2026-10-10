@@ -32,7 +32,7 @@ window can't be resized", "the scale bar says pixels").
 | File | Covers |
 | --- | --- |
 | `SKILL.md` | How to work, the rules that bite most often, done-checklist |
-| `references/windows-and-docks.md` | Dock minimum sizes, scroll areas, screen fitting |
+| `references/windows-and-docks.md` | Dock minimum sizes, scroll areas, screen fitting, panels menu, session restore |
 | `references/interaction.md` | Button slots, canvas clicks, label editing, thread workers, shortcuts |
 | `references/data-and-io.md` | Lazy reading, pyramid levels, scale and units, HDF5 writes |
 | `references/cellpose.md` | Device choice, µm sizes, 2D + stitch, model families |
