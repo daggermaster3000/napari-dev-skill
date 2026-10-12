@@ -112,6 +112,23 @@ normalisation dropdowns, one colour store every palette goes through, spatial
 heatmaps, `AppTest` headless checks, and decoding plotly's base64-packed arrays
 in tests.
 
+### Explorer UI → `references/streamlit-ui.md`
+Read before adding a tab, control or app. Same skeleton every time: wide page,
+sidebar only for whole-app choices (Workbook, Colours, Rows, Cells), a caption of
+what survived the filters under the title, one question per tab with `Table`
+last, controls left / result right in `st.columns([1, 3])`. One vocabulary for
+states — `info` (load or install this), `warning` (change a choice), `error`
+(broke), `caption` (partial) — never an empty chart or a traceback. Reuse the
+existing labels ("Colour by", "Group by"); key every widget with its tab prefix.
+
+### Explorer colour → `references/streamlit-colour.md`
+Read before choosing any colour. One shared palette (8 categorical, named
+neutrals), assigned by position in a fixed order — reference group first,
+unknown last and grey — so a value keeps its colour in every plot and under any
+filter. Sequential ramp for amounts, diverging only for signed differences and
+symmetric about zero; pin and share the range. Every mapping goes out through
+`paint(kind, …)`.
+
 ### Graph aesthetics → `references/streamlit-explorers.md` ("house style")
 Every plot, interactive or exported: **every mark outlined in black** over its
 group colour (violins, boxes, bars, dots, filled shapes), **violins without an
@@ -131,5 +148,8 @@ matplotlib report figures.
 - Tests that save settings (names, colours, remembered rules) redirect them to a
   temp dir instead of the user's real files.
 - The pure-logic module has unit tests that run without a display.
+- New explorer UI follows `references/streamlit-ui.md` (layout, states, wording)
+  and takes its colours from the shared palette through `paint()`
+  (`references/streamlit-colour.md`) — no hex literal in a plot.
 - New plots go through the house-style wrapper (black outlines, violins without
   an inner box), not a raw `st.plotly_chart` or unstyled matplotlib call.

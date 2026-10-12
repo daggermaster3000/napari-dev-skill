@@ -3,6 +3,10 @@
 The viewer writes a workbook (per-sample, per-region, per-cell sheets); small
 Streamlit apps plot and test it. Patterns that worked:
 
+Layout, controls and wording are in `streamlit-ui.md`; the palette and colour
+rules in `streamlit-colour.md`. This file is the data, statistics, house-style
+wrapper and testing.
+
 ## Structure
 
 - One shared module (`explorer_common.py`) with the cached readers

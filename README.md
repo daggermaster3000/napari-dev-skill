@@ -38,4 +38,6 @@ window can't be resized", "the scale bar says pixels").
 | `references/cellpose.md` | Device choice, µm sizes, 2D + stitch, model families |
 | `references/packaging-and-startup.md` | Splash, launchers, macOS `FileOpen` events |
 | `references/streamlit-explorers.md` | Shared reader module, caching, palettes, plot house style |
+| `references/streamlit-ui.md` | Explorer page skeleton, sidebar, tabs, controls, empty/error states, wording, figure sizing |
+| `references/streamlit-colour.md` | Palette, colour assignment rules, continuous scales, opacity, user colours, themes |
 | `references/testing.md` | Driving the real UI, screenshots, headless checks |
